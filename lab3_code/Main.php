@@ -500,7 +500,7 @@ class AdventureController {
             }
             
         }
-        if(!$has_start || !$has_end){
+        if(!$has_start || !$has_end || !$this->validate_challenge_path()){
             return FALSE;
         }
         else{
@@ -508,6 +508,10 @@ class AdventureController {
         }
         
         
+    }
+
+    private function validate_challenge_path() : bool{
+        return TRUE;
     }
     
     

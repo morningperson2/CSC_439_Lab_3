@@ -214,6 +214,13 @@ class AdventureControllerTest extends TestCase
         $bad_challenge2 = new ChallengeModel("2","","","","_end","",array(),array(),array());
 
         $sut->add_challenge($bad_challenge1);
+        $sut->add_challenge($bad_challenge2);
+
+        $result = $sut->validate_challenge();
+
+        $this->assertFalse($result);
+
+
     }
     
 }
