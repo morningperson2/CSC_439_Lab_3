@@ -160,6 +160,7 @@ class AdventureControllerTest extends TestCase
     }
 
     public function test_validate_challenge_noStart(){
+        CharacterModel::add_available_attribute("Speed");
         $bro = new BinaryRandomOracle(new RNG());
         $character = new CharacterModel($bro, "brian", 0);
         $database = array();
@@ -168,14 +169,14 @@ class AdventureControllerTest extends TestCase
         $bad_challenge1 = new ChallengeModel("1","","","","","",array(),array(),array());
         $sut->add_challenge($bad_challenge1);
 
-        $result = $sut->validate_challenge();
+        $result = $sut->validate_challenge_start();
 
         $this->assertFalse($result);
         
         $bad_challenge2 = new ChallengeModel("_start","","","","","_end",array(),array(),array());
         $sut->add_challenge($bad_challenge2);
 
-        $result2 = $sut->validate_challenge();
+        $result2 = $sut->validate_challenge_start();
         
         $this->assertTrue($result2);
 
@@ -187,18 +188,18 @@ class AdventureControllerTest extends TestCase
         $database = array();
         $sut = new AdventureController($character, $database);
 
-        $bad_challenge1 = new ChallengeModel("_start","","","","2","",array(),array(),array());
+        $bad_challenge1 = new ChallengeModel("_start","","","","","",array(),array(),array());
         $bad_challenge2 = new ChallengeModel("2","","","","_end","",array(),array(),array());
 
         $sut->add_challenge($bad_challenge1);
 
-        $result = $sut->validate_challenge();
+        $result = $sut->validate_challenge_end();
 
         $this->assertFalse($result);
         
         $sut->add_challenge($bad_challenge2);
         
-        $result2 = $sut->validate_challenge();
+        $result2 = $sut->validate_challenge_end();
         
         $this->assertTrue($result2);
 
@@ -210,18 +211,55 @@ class AdventureControllerTest extends TestCase
         $database = array();
         $sut = new AdventureController($character, $database);
 
-        $bad_challenge1 = new ChallengeModel("_start","","","","2","",array(),array(),array());
-        $bad_challenge2 = new ChallengeModel("2","","","","_end","",array(),array(),array());
+        $bad_challenge1 = new ChallengeModel("_start","","","","7","3",array(),array(),array());
+        $bad_challenge2 = new ChallengeModel("2","","","","_end","4",array(),array(),array());
+        $bad_challenge3 = new ChallengeModel("7","","","","_end","4",array(),array(),array());
 
         $sut->add_challenge($bad_challenge1);
         $sut->add_challenge($bad_challenge2);
 
-        $result = $sut->validate_challenge();
+        $result = $sut->validate_challenge_path();
 
         $this->assertFalse($result);
 
+        $sut->add_challenge($bad_challenge3);
+
+        $result2 = $sut->validate_challenge_path();
+
+        $this->assertTrue($result2);
+
 
     }
+
+    public function test_validate_challenge_attribute(){
+        CharacterModel::add_available_attribute("Speed");
+        $bro = new BinaryRandomOracle(new RNG());
+        $character = new CharacterModel($bro, "brian", 1);
+        $database = array();
+        $sut = new AdventureController($character, $database);
+
+        $bad_challenge1 = new ChallengeModel("_start","","Strength","","7","3",array(),array(),array());
+        $bad_challenge2 = new ChallengeModel("7","","","","_end","4",array(),array(),array());
+
+        $sut->add_challenge($bad_challenge1);
+        $sut->add_challenge($bad_challenge2);
+
+        $result = $sut->validate_challenge_attribute();
+
+        $this->assertFalse($result);
+
+        $sut->remove_challenge("_start");
+
+        $bad_challenge1 = new ChallengeModel("_start","","Speed","","7","3",array(),array(),array());
+
+        $sut->add_challenge($bad_challenge1);
+
+        $result2 = $sut->validate_challenge_attribute();
+
+        $this->assertTrue($result2);
+
+    }
+
     
 }
 

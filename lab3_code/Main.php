@@ -350,6 +350,10 @@ class ChallengeModel {
     public function get_fail_id() : string{
         return $this->failure_next;
     }
+
+    public function get_test_attribute() : string{
+        return $this->test_attribute;
+    }
     
     /**
      * Compares the character attribute level with the challenge threat level
@@ -486,12 +490,31 @@ class AdventureController {
     }
 
     public function validate_challenge() : bool{
+        $has_start = $this->validate_challenge_start();
+        $has_end = $this->validate_challenge_end();
+        $has_path = $this->validate_challenge_path();
+        $has_attribute = $this->validate_challenge_attribute();
+        if(!$has_start || !$has_end || !$has_path || !$has_attribute){
+            return FALSE;
+        }
+        else{
+            return TRUE;
+        }   
+    }
+
+    public function validate_challenge_start() : bool{
         $has_start = FALSE;
-        $has_end = FALSE;
         foreach($this->challenge_database as $challenge){
             if($challenge->get_id() == "_start"){
                 $has_start = TRUE;
             }
+        }
+        return $has_start;
+    }
+
+    public function validate_challenge_end() : bool{
+        $has_end = FALSE;
+        foreach($this->challenge_database as $challenge){
             if($challenge->get_fail_id() == "_end"){
                 $has_end = TRUE;
             }
@@ -500,18 +523,49 @@ class AdventureController {
             }
             
         }
-        if(!$has_start || !$has_end || !$this->validate_challenge_path()){
-            return FALSE;
-        }
-        else{
-            return TRUE;
-        }
-        
-        
+        return $has_end;
     }
 
-    private function validate_challenge_path() : bool{
-        return TRUE;
+    public function validate_challenge_path() : bool{
+        $state = TRUE;
+        $Challenge = "_start";
+        $Challenge2 = $Challenge;
+        while($state){
+            if(array_key_exists($Challenge, $this->challenge_database) || array_key_exists($Challenge2, $this->challenge_database)){
+                if($this->challenge_database[$Challenge]->get_succeed_id() == "_end" || $this->challenge_database[$Challenge]->get_fail_id() == "_end"){
+                    break;
+                }
+                else{
+                    $Challenge = $this->challenge_database[$Challenge]->get_succeed_id();
+                    $Challenge2 = $this->challenge_database[$Challenge2]->get_fail_id();
+                }
+            }
+            else{
+                $state = FALSE;
+            }
+
+        }
+
+        return $state;
+    }
+
+    public function validate_challenge_attribute() : bool{
+        $has_attribute = TRUE;
+        $attributes = $this->character->get_attributes();
+        foreach($this->challenge_database as $challenge){
+            $cAttribute = $challenge->get_test_attribute();
+            $tempSignal = FALSE;
+            foreach ($attributes as $attribute){
+                if($cAttribute == $attribute){
+                    $tempSignal = TRUE;
+                }
+            }
+            if(!$tempSignal){
+                $has_attribute = $tempSignal;
+                break;
+            }
+        }
+        return $has_attribute;
     }
     
     

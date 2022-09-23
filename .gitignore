@@ -1,2 +1,5 @@
 # Project exclude paths
 **/coverage/**
+lab3_code/coverage/html/dashboard.html
+lab3_code/coverage/html/Main.php.html
+lab3_code/coverage/html/index.html
